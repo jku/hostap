@@ -991,7 +991,20 @@ dbus_bool_t wpas_dbus_setter_p2p_device_config(DBusMessageIter *iter,
 		else if (os_strcmp(entry.key, "p2p_search_delay") == 0 &&
 			 entry.type == DBUS_TYPE_UINT32)
 			wpa_s->conf->p2p_search_delay = entry.uint32_value;
-		else
+		else if (os_strcmp(entry.key, "ConfigMethods") == 0 &&
+			 entry.type == DBUS_TYPE_STRING) {
+			char *methods;
+
+			methods = os_strdup(entry.str_value);
+			if (!methods)
+				goto err_no_mem_clear;
+
+			os_free(wpa_s->conf->config_methods);
+			wpa_s->conf->config_methods = methods;
+
+			wpa_s->conf->changed_parameters |=
+					CFG_CHANGED_CONFIG_METHODS;
+		} else
 			goto error;
 
 		wpa_dbus_dict_entry_clear(&entry);
